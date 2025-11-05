@@ -5,16 +5,17 @@
 汇编代码如下：
 
 ```
-.MODEL small                 	; 定义程序的内存模型为small
+..MODEL small                 	; 定义程序的内存模型为small
 .STACK 100h                  	; 定义栈区大小为256字节
 
 .DATA                        	; 数据段开始
-msgReg   db '寄存器(AX): $'     	; 标签字符串：来自寄存器 AX
-msgData  db '数据段(sum): $'   	; 标签字符串：来自数据段变量 sum
-msgStack db '栈存放 (top): $'  	; 标签字符串：来自栈顶
+msgReg   db 'Reg(AX): $'     	; 标签字符串：来自寄存器 AX
+msgData  db 'Data(sum): $'   	; 标签字符串：来自数据段变量 sum
+msgStack db 'Stack (top): $'  	; 标签字符串：来自栈顶
 
 sum      DW 0                	; 数据段变量：保存求和结果
-buf      DB 10 DUP (?)        	; 十进制打印缓冲 -- 定义10个字节的缓冲区
+buf      DB 7 DUP (?)        	; 十进制打印缓冲 -- 定义7个字节的缓冲区
+
 
 .CODE                        	; 代码段开始
 start:                       	; 程序入口
@@ -22,8 +23,8 @@ start:                       	; 程序入口
     mov     ds, ax           	; 把ax的内容传入到ds中
 
     xor     ax, ax           	; 将累加寄存器ax置零 （ax=0）
-    mov     bx, 1            	; 将数据寄存器bx置为1，当前加数从1开始
-    mov     cx, 100          	; CX计数寄存器 = 100，循环100次
+    mov     bx, 1d            	; 将数据寄存器bx置为1，当前加数从1开始
+    mov     cx, 100d          	; CX计数寄存器 = 100，循环100次
 
 sum_loop:                    	; 求和循环起点
     add     ax, bx           	; AX += BX，把当前加数加到累加器
@@ -35,13 +36,15 @@ sum_loop:                    	; 求和循环起点
 
 
 								;从寄存器 AX 打印
+	push	ax					
     lea     dx, msgReg       	; 寄存器AX装入到dx中的偏移地址
     mov     ah, 9            	; AH=9：DOS 显示以 '$' 结尾的字符串
     int     21h              	; 调用 DOS 打印标签（不换行）
-
+	pop		ax 
+	
     mov     byte ptr [buf+6], '$'  ; 在缓冲区末尾写入 '$' 作为字符串终止符
     lea     di, buf+6              ; DI 指向 '$' 位置，准备倒序写入数字
-    mov     bx, 10                 ; BX=10，十进制除数
+    mov     bx, 10d                 ; BX=10，十进制除数
 
 convA:                         	 ; 十进制转换（寄存器 AX 的值）
     xor     dx, dx               ; 清 DX，准备进行 16 位除法 DX:AX / 10
@@ -63,14 +66,14 @@ convA:                         	 ; 十进制转换（寄存器 AX 的值）
     int     21h                  ; 输出 LF（换行结束该行）
 
 								 ;从数据段变量 sum 打印
-    mov     ax, sum              ; AX <- sum（从数据段变量取回结果）
-    lea     dx, msgData          ; DX <- "DATA(sum): $" 的偏移地址
-    mov     ah, 9                ; AH=9：打印标签
-    int     21h                  ; 调用 DOS 打印（不换行）
-
-    mov     byte ptr [buf+6], '$'; 缓冲末尾写入 '$'
-    lea     di, buf+6            ; DI 指向 '$'
-    mov     bx, 10               ; 除数=10
+	lea		dx,msgData
+	mov		ah,9
+	int		21h
+	mov		ax,sum
+	mov		byte ptr[buf+6],'$'
+	lea		di,buf+6
+	mov		bx,10d
+	
 
 convB:                           ; 十进制转换（来自数据段的值）
     xor     dx, dx               ; 清 DX，准备除法 DX:AX / 10
@@ -92,14 +95,15 @@ convB:                           ; 十进制转换（来自数据段的值）
     int     21h                  ; 输出 LF
 
 								 ;从栈顶弹回打印
-    pop     ax                   ; AX <- 栈顶（取回先前压栈的 5050）
-    lea     dx, msgStack         ; DX <- "STACK(top): $" 的偏移地址
-    mov     ah, 9                ; AH=9：打印标签
-    int     21h                  ; 调用 DOS 打印（不换行）
-
-    mov     byte ptr [buf+6], '$'; 缓冲末尾写入 '$'
-    lea     di, buf+6            ; DI 指向 '$'
-    mov     bx, 10               ; 除数=10
+	lea		dx,msgStack
+	mov		ah,9
+	int 	21h
+	
+	pop		ax
+	
+	mov		byte ptr [buf+6],'$'
+	lea		di,buf+6
+	mov		bx,10d
 
 convC:                           ; 十进制转换（来自栈的值）
     xor     dx, dx               ; 清 DX，准备除法 DX:AX / 10
@@ -124,7 +128,18 @@ convC:                           ; 十进制转换（来自栈的值）
     int     21h                  ; 回到 DOS
 
 END start                       ; 程序结束/入口标记
+
 ```
+1. 执行命令`masm SUM.asm`, Object filename选项回车，表示接受默认文件名，Source listing 选项回车，表示不生产源代码列表文件， Cross-reference 回车，表示不生成交叉引用表。作用是使用编译器将汇编语言的.asm源文件编译成.obj文件。
+   <img width="1727" height="1080" alt="image" src="https://github.com/user-attachments/assets/70116dd0-105e-46bb-a26c-b85f9a624a9e" />
+
+2. 执行命令`link SUM.obj`,Run File 选项回车，表示接受默认文件名，List File 选项回车，表示不生成列表文件，Libraries 选项回车，表示不链接任何额外的库文件，采用默认设置。这一步通过连接器将编译生成的目标文件链接为.exe文件。
+   <img width="1727" height="443" alt="image" src="https://github.com/user-attachments/assets/f6a2412c-5d65-4c46-8035-d3c513191730" />
+
+3. 执行命令`SUM.exe`,运行程序
+   <img width="1727" height="448" alt="image" src="https://github.com/user-attachments/assets/0480d3f3-20fc-43e3-a793-9e7d4b03b0b7" />
+
+   
 ## 小结
 
 1. `buf db xx DUP(?)` --数据缓冲区--在数据段中预留一块连续的内存空间(xx为想要预留的字节数)。 DUP(?)表示存放转换后的十进制数字的ASCII字符，类似于在高级语言中声明一个字符数组。
