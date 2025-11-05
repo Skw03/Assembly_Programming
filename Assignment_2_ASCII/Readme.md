@@ -144,3 +144,32 @@ int main()
     return 0;
 }
 ```
+部分反汇编代码：
+	<img width="1727" height="1080" alt="image" src="https://github.com/user-attachments/assets/8b849484-b3ab-45ed-ac7c-7dcfbce0a08e" />
+	<img width="1029" height="775" alt="image" src="https://github.com/user-attachments/assets/08a77248-bfc7-4fb8-a949-5a74a95a8fe6" />
+	<img width="1033" height="705" alt="image" src="https://github.com/user-attachments/assets/2a1386ee-e28c-4cd6-9137-92266e196cae" />
+	<img width="931" height="740" alt="image" src="https://github.com/user-attachments/assets/ab4f9ca0-332c-42b3-bb40-386bb99f5a91" />
+
+部分反汇编代码解释：
+
+1. `076C:0000 0E PUSH CS`
+   将代码段寄存器CS的值压入栈
+   
+2. '076C:0001 1F POP DS'
+   把栈顶弹到DS，使DS=CS。这样数据段和代码段一致
+
+3. `076C:0002 BA 0E00 MOV DX 000E`
+   将0x000E移动到DX，设置DX为数据段的某个偏移地址
+
+4. `076C:0005 B4 09 MOV AH,09`
+   设置DOS中断21h的功能号为09h-输出字符串
+
+5.`076C:0007 CD 21INT 21h`
+   调用DOS中断21h,执行字符串输出
+
+6. `076C:0007 BB 014C MOV AX 4C01`
+    将4C01移动到AX，调用DOS的程序结束功能
+
+7.`076C:000C CD 21 INT 21h`
+   调用DOS中断21h,结束程序
+
