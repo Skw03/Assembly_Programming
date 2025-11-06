@@ -172,5 +172,30 @@ int main()
 <img width="1726" height="1080" alt="image" src="https://github.com/user-attachments/assets/3c0f4ad2-422d-4a5e-921c-19cccd23247e" />
 <img width="1726" height="812" alt="image" src="https://github.com/user-attachments/assets/30b0b915-5d21-432e-b500-2ecb1829951b" />
 
+部分反汇编代码解释如下：
 
+`076c:0000 0E PUSH CS` 将当前代码段寄存器的值压入栈中
 
+`076C:0001 1F POP DS` 从栈中弹出一个值并存储到数据段寄存器(DS)
+
+`076C:0002 BA0E00 MOV DX,000E` 将常熟000E移动到数据寄存器DX中
+
+`076C:0005 B409 MOV AH,09` 将09移动到寄存器AH中，通常用于输出字符串
+
+`076C:0007 CD21 INT 21` 调用DOS中断21h,处理系统调用--如输出字符串
+
+`076C:0009 B8014C MOV AX,4C01` 将4C01移动到AX寄存器--通常用于退出程序
+
+`076C:000C CD21 INT 21` 再次调用DOS中断21h--程序的正常退出
+
+`076C:000E 54 PUSH SP` 将堆栈指针(SP)的值压入栈中
+
+`076C:00XX xxxx DB XX` 定义字节(ASCII字符或数据)
+
+`076C:0011 7320 JNB 0033` 如果无法进位标志(CF)被设置，则跳转到地址0033
+
+`076C:0013 7072 JO 0087` 如果有溢出标志(OF)被设置，则跳转到地址0087
+
+`076C:0017 7261 jb 007a` 如果CF被设置，则跳转到地址007A
+
+`076C:001A 206361 AND [BP+DI+61],AH` 对内存地址[BP+DI+61]中的值与AH寄存器的值进行按位与操作
