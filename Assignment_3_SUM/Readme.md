@@ -347,22 +347,8 @@ END START
 3. 执行命令`inputsum.exe`,运行程序
   <img width="1727" height="700" alt="image" src="https://github.com/user-attachments/assets/52c5c24d-18a9-43f2-b260-d8418d3c570c" />
   
-## 用C语言实现后察看反汇编代码并加注释
+## 小结
 
-c语言代码如下:
-```
-#include <stdio.h>
-
-int main()
-{
-    int sum = 0; 
-    for (int i = 1; i <= 100; i++)
-{ 
-        sum += i; 
-    }
-    printf("%d\n", sum); 
-    return 0; // 
-}
-```
-
-部分反汇编代码如下：
+1. `lea`--装载有效地址--把内存操作数的计算后地址装进寄存器。语法为`lea reg, mem`(目的地必须是寄存器)
+2. `cmp`--比较--执行一次暗中减法OP1-0P2，只设置标志位，不保存结果。常用于条件跳转。语法为`cmp r,r`比较两边大小一致。
+3. `je`--相等则跳--比较相等时分支。通常来自前面的cmp结果来决定。
