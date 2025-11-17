@@ -170,3 +170,23 @@ END start
 	```
 	
 5. `ret`--从子程序退回--从栈中弹出返回地址并跳转回去。
+
+## 通过C语言实现并查看反汇编代码
+
+C语言代码如下：
+```
+#include <stdio.h>
+
+int main() {
+    printf("九九乘法表：\n");
+    
+    for (int i = 1; i <= 9; i++) {
+        for (int j = 1; j <= i; j++) {
+            printf("%d×%d=%-2d ", j, i, i * j);
+        }
+        printf("\n");
+    }
+return 0;
+}
+```
+部分反汇编代码：
