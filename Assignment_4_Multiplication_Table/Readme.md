@@ -137,3 +137,36 @@ no_pad:
 END start
 
 ```
+
+1. 执行命令`masm MUL9_T.asm`, Object filename选项回车，表示接受默认文件名，Source listing 选项回车，表示不生产源代码列表文件， Cross-reference 回车，表示不生成交叉引用表。作用是使用编译器将汇编语言的.asm源文件编译成.obj文件。
+   <img width="1726" height="1080" alt="image" src="https://github.com/user-attachments/assets/876d3649-e002-4a3f-ad2c-9f6ef20d20b6" />
+
+2. 执行命令`link MUL9_T.obj`,Run File 选项回车，表示接受默认文件名，List File 选项回车，表示不生成列表文件，Libraries 选项回车，表示不链接任何额外的库文件，采用默认设置。这一步通过连接器将编译生成的目标文件链接为.exe文件。
+   <img width="1726" height="464" alt="image" src="https://github.com/user-attachments/assets/afd97b5d-5f37-4eb8-af59-65ad4ef6e1cc" />
+
+3. 执行命令`MUL9_T.exe`,运行程序
+   <img width="1726" height="562" alt="image" src="https://github.com/user-attachments/assets/8a8c6112-c940-4594-8ed7-1c8fa87ca244" />
+
+## 小结
+
+1. `JNE`--不相等时跳转--检查零标志位ZF=0时跳转。用法为：
+   ```
+   cmp operand1,operand2  ; 先比较两个操作数
+   jne target_label		  ; 如果不相等则跳转
+   ```
+2. `JAE`--高于或等于时跳转--检查进位标志CF=0时跳转。用法：
+   ```
+   cmp operand1,operand2  ; 先比较两个无符号数
+   jne target_label		  ; 如果 operand1>= operand2则跳转
+   ```
+3. `JBE`--低于或等于时跳转--检查CF=1或者ZF=1时跳转。用法：
+    ```
+   cmp operand1,operand2  ; 先比较两个无符号数
+   jne target_label		  ; 如果 operand1<= operand2则跳转
+   ```
+4.  `call`--调用子程序--它会把返回地址压入栈中，跳转到目标地址开始执行子程序，子程序结束时用RET弹出返回地址到调用点。语法：
+	```
+	call procedure_name		;调用子程序
+	```
+	
+5. `ret`--从子程序退回--从栈中弹出返回地址并跳转回去。
