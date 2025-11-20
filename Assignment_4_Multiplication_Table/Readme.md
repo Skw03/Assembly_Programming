@@ -394,3 +394,5 @@ END MAIN
 3. 执行命令`MUL9_C.exe`,运行程序
   <img width="1727" height="443" alt="image" src="https://github.com/user-attachments/assets/5e3ed879-6aa4-4abd-aa33-6e9e711eae8c" />
 
+## 小结
+
