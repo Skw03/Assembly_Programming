@@ -189,4 +189,82 @@ int main() {
 return 0;
 }
 ```
+通过Ghidrac查看反汇编代码：
+<img width="2840" height="1563" alt="image" src="https://github.com/user-attachments/assets/c038e466-9c7e-4de8-a251-5e326ccdd5c2" />
+
 部分反汇编代码：
+```
+;---------------- MUL9.c:3 ----------------
+140001458  e8 33 01
+		      00 00     CALL 	__main               	; 调用编译器生成的初始化函数 __main()，完成C运行时环境初始化
+;---------------- MUL9.c:4 ----------------
+14000145d  48 8d 05
+		   9c 2b 00		LEA  	RAX, [DAT_140004000] 	; 把字符串常量 DAT_140004000 的地址装入 RAX（LEA=取地址，不访问内存）
+		   00
+
+140001464  48 89 c1    	MOV  	_Argc, RAX          	; 把 RAX 中的地址放入 RCX（IDA 起名为 _Argc）
+
+140001467  e8 bc 14	 	CALL 	puts  					; 调用 puts(_Str)，打印开头标题字符串
+		   00 00                    
+
+;---------------- MUL9.c:6 外层循环初始化 ----------------
+14000146c  c7 45 fc		MOV 	dword ptr [RBP + i], 0x1	; 把局部变量 i 设为 1，等价于 C 代码：i = 1;
+		   01 00 00
+		   00 
+
+;---------------- 跳到外层 for 条件检查处 ----------------
+140001473  eb 45     	JMP  	LAB_1400014ba       	; 无条件跳转到 0x1400014ba，去做外层 for(i<10) 的条件判断
+
+;---------------- 内层循环入口标签 ----------------
+						LAB_140001475                 	; 对应内层 for 的“初始化”位置
+
+;---------------- MUL9.c:7 内层循环初始化 j=1 --------
+140001475  c7 45 f8		MOV 	dword ptr [RBP + j], 0x1	; 把局部变量 j 设为 1，等价于 C：j = 1;
+		   01 00 00
+		   00
+
+14000147c  eb 26        JMP 	LAB_1400014a4        	; 跳到内层循环的条件判断处（j <= i ?）
+
+;---------------- 内层循环体标签 ----------------
+						LAB_14000147e                  	; 真正循环体开始位置
+
+;---------------- MUL9.c:8 计算 i*j 并准备 printf 参数 --------
+14000147e  8b 45 fc    	MOV  	EAX, dword ptr [RBP + i]	; 把 i 的值读到 EAX 中，EAX = i
+140001481  0f af 45  	IMUL 	EAX, dword ptr [RBP + j]	; 有符号整数乘法：EAX = EAX * j = i * j
+		   f8
+140001485  89 c1       	MOV  	_Argc, EAX					; 把乘积 i*j 放到 ECX（_Argc）中，暂存，之后会作为 printf 的第4个参数传给 R9D
+140001487  44 8b 45		MOV  	_Env, dword ptr [RBP + i]	; 把 i 的值读到 R8D 中（_Env 是 R8D），这是 printf 的第3个参数
+		   fc          
+14000148b  8b 55 f8    	MOV  	_Argv, dword ptr [RBP + j]	; 把 j 的值读到 EDX 中（_Argv 是 EDX），这是 printf 的第2个参数
+14000148e  48 8d 05		LEA  	RAX, [DAT_140004013]		; 取出格式字符串 DAT_140004013 的地址到 RAX
+		   7e 2b 00											; 这个字符串很可能是 "%d*%d=%2d " 之类的格式
+		   00 
+
+140001495  41 89 c9    	MOV  	R9D, _Argc					; 把之前暂存在 ECX(_Argc) 中的乘积 i*j 复制到 R9D，
+140001498  48 89 c1    	MOV  	_Argc, RAX					; 把格式字符串地址 RAX 放进 RCX（_Argc），作为 printf 的第1个参数 _Format
+14000149b  e8 60 11		CALL 	printf						; 调用 printf(_Format, j, i, i*j);
+		   00 00      										; 对应 C 代码：printf("%d*%d=%2d ", j, i, i*j);
+
+;---------------- MUL9.c:7 内层循环的 j++ ----------------
+1400014a0  83 45 f8		ADD 	dword ptr [RBP + j], 0x1	; j 自增 1：j = j + 1;
+		   01          
+;---------------- 内层循环条件判断 ----------------
+						LAB_1400014a4                     	; 内层 for 的条件检查位置
+1400014a4  8b 45 f8    	MOV  	EAX, dword ptr [RBP + j]	; 取出当前 j 的值到 EAX
+1400014a7  3b 45 fc    	CMP  	EAX, dword ptr [RBP + i]	; 比较 j 与 i：实际上是做 j - i，用来设置标志位
+
+1400014aa  7e d2        JLE  	LAB_14000147e				; 如果 j <= i（小于等于，ZF=1 ），
+															; 则跳回 LAB_14000147e 继续执行循环体
+															; 对应 C：if (j <= i) goto loop_body;
+
+;---------------- MUL9.c:10 一行结束，输出换行 ----------------
+1400014ac  b9 0a 00	 	MOV  	_Argc, 0xa					; 把常数 0x0A（十进制 10，ASCII 换行 '\n'）放入 ECX（_Argc），
+		   00 00      										; 准备作为 putchar 的参数 _Ch
+1400014b1  e8 6a 14 00 00       CALL putchar				; 调用 putchar(10)，输出 '\n'，结束当前一行的乘法表
+```
+## 九九乘法表纠错
+
+汇编代码如下：
+```
+
+```
